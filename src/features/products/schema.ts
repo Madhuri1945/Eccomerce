@@ -13,4 +13,5 @@ export const productSchema = z.object({
   ),
   image: z.string().url("Invalid image URL"),
   categoryId: z.number().int(),
+  subCategory: z.string().min(1, "Subcategory is required"),
 });

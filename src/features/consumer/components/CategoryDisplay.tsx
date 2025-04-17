@@ -27,6 +27,10 @@ export default function CategoryDisplay(category: Category) {
               className="w-full h-32 object-cover rounded-md mb-2"
             />
             <h3 className="text-sm font-medium">{product.name}</h3>
+            <p className="text-gray-700 bg-black text-sm">
+              {product.description}
+            </p>
+
             <p className="text-sm text-gray-500">₹{product.price}</p>
           </Card>
         ))}

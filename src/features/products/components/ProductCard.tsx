@@ -25,6 +25,11 @@ export default function ProductCard({
             {product.name}
           </h2>
           <p className="text-gray-600 text-sm">{product.description}</p>
+          {product.subCategory && (
+            <p className="text-gray-500 text-xs italic mt-1">
+              Subcategory: {product.subCategory}
+            </p>
+          )}
         </div>
         <div className="text-right">
           <p className="text-lg font-bold text-green-600">${product.price}</p>

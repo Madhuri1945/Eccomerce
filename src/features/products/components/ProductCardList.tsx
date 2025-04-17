@@ -56,6 +56,8 @@ export default function ProductCardList({ products }: { products: Product[] }) {
                   product={{
                     ...editingProduct,
                     categoryId: editingProduct?.categoryId ?? 0, // Default to 0 if null
+                    subCategory: editingProduct?.subCategory || "",
+                    description: editingProduct.description ?? undefined,
                   }}
                   categoryId={editingProduct.categoryId || 0}
                   onSave={handleClose}

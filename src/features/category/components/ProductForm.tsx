@@ -35,6 +35,7 @@ export function ProductForm({
     price: number;
     stock: number;
     image: string;
+    subCategory?: string;
     categoryId: number;
   };
   categoryId: number;
@@ -51,6 +52,7 @@ export function ProductForm({
       price: product?.price || 0,
       stock: product?.stock || 0,
       image: product?.image || "",
+      subCategory: product?.subCategory || "",
       categoryId,
     },
   });
@@ -155,7 +157,19 @@ export function ProductForm({
             </FormItem>
           )}
         />
-
+        <FormField
+          control={form.control}
+          name="subCategory"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>SubCategory</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="Enter subCategory name" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         {/* Image URL */}
         <FormField
           control={form.control}

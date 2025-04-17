@@ -13,7 +13,7 @@ import {
   updateProduct as updateProductDb,
   deleteProduct as deleteProductDb,
 } from "../db/product";
-import { redirect } from "next/navigation";
+
 import { revalidateCategoryCache } from "@/features/category/db/cache";
 
 export async function createProduct(unsafeData: z.infer<typeof productSchema>) {
