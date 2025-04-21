@@ -3,6 +3,7 @@ import CategoryDisplay from "@/features/consumer/components/CategoryDisplay";
 import prisma from "@/lib/db";
 import { cacheTag } from "next/dist/server/use-cache/cache-tag";
 import { Product } from "@prisma/client";
+import { Description } from "@radix-ui/react-dialog";
 interface Category {
   id: number; // Unique identifier for the category
   name: string; // Name of the category
@@ -41,6 +42,7 @@ async function getCategories() {
           name: true,
           price: true,
           image: true,
+          description: true,
         },
       },
     },

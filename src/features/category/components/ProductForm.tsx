@@ -1,11 +1,17 @@
-"use client";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation"; // Updated import for useRouter in Next.js
+import { useRouter } from "next/navigation";
 import {
   Form,
   FormControl,
@@ -20,13 +26,16 @@ import { productSchema } from "@/features/products/schema";
 import {
   createProduct,
   updateProduct,
+  createSubCategory,
 } from "@/features/products/actions/product";
 
-// ProductForm Component
+// Ensure you have this import.
+
 export function ProductForm({
   product,
   categoryId,
   onSave,
+  subCategories,
 }: {
   product?: {
     id: number;
@@ -35,14 +44,19 @@ export function ProductForm({
     price: number;
     stock: number;
     image: string;
-    subCategory?: string;
+    subCategoryId?: number;
     categoryId: number;
   };
   categoryId: number;
   onSave?: () => void;
+  subCategories: { id: number; name: string }[]; // Ensure subCategories is an array
 }) {
   const [loading, setLoading] = useState(false);
-  const router = useRouter(); // Ensure correct router usage with "next/navigation"
+  const [localSubCategories, setLocalSubCategories] = useState(
+    subCategories || []
+  ); // Default to empty array if subCategories is undefined
+  const [newSubCategory, setNewSubCategory] = useState("");
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
@@ -52,32 +66,53 @@ export function ProductForm({
       price: product?.price || 0,
       stock: product?.stock || 0,
       image: product?.image || "",
-      subCategory: product?.subCategory || "",
+      subCategoryId: product?.subCategoryId || undefined,
       categoryId,
     },
   });
 
-  // Handle form submission
+  async function handleNewSubCategory(name: string) {
+    try {
+      const response = await createSubCategory({ name, categoryId });
+      if (response.success && response.subCategory) {
+        setLocalSubCategories((prev) => [
+          ...prev,
+          { id: response.subCategory.id, name: response.subCategory.name },
+        ]);
+        return response.subCategory.id;
+      } else {
+        throw new Error(response.message || "Failed to create subcategory");
+      }
+    } catch (err) {
+      toast.error("Failed to create subcategory");
+      throw err;
+    }
+  }
+
   async function onSubmit(values: z.infer<typeof productSchema>) {
     setLoading(true);
     try {
-      // Ensure price and stock are numbers
+      let subCategoryId = values.subCategoryId;
+
+      if (newSubCategory) {
+        subCategoryId = await handleNewSubCategory(newSubCategory);
+      }
+
       const processedValues = {
         ...values,
-        price: Number(values.price), // Coerce value to number
+        price: Number(values.price),
         stock: Number(values.stock),
+        subCategoryId,
       };
 
       if (!product) {
         await createProduct(processedValues);
         toast.success("Product created successfully!");
-        router.push("/admin/category"); // Navigate after successful creation
+        router.push("/admin/category");
       } else {
         await updateProduct(product.id, processedValues);
         toast.success("Product updated successfully!");
-        if (onSave) {
-          onSave();
-        }
+        if (onSave) onSave();
       }
     } catch (error) {
       console.error(error);
@@ -136,6 +171,7 @@ export function ProductForm({
                   {...field}
                   placeholder="Enter price"
                   step="0.01"
+                  onChange={(e) => field.onChange(Number(e.target.value))}
                 />
               </FormControl>
               <FormMessage />
@@ -151,25 +187,63 @@ export function ProductForm({
             <FormItem>
               <FormLabel>Stock</FormLabel>
               <FormControl>
-                <Input type="number" {...field} placeholder="Enter stock" />
+                <Input
+                  type="number"
+                  {...field}
+                  placeholder="Enter stock"
+                  onChange={(e) => field.onChange(Number(e.target.value))}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+
+        {/* SubCategory */}
         <FormField
           control={form.control}
-          name="subCategory"
+          name="subCategoryId"
           render={({ field }) => (
             <FormItem>
               <FormLabel>SubCategory</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Enter subCategory name" />
+                <Select
+                  onValueChange={(value) => field.onChange(Number(value))}
+                  value={field.value?.toString() || ""}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a subcategory" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {localSubCategories &&
+                      localSubCategories.map((subCategory) => (
+                        <SelectItem
+                          key={subCategory.id}
+                          value={subCategory.id.toString()}
+                        >
+                          {subCategory.name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+
+        {/* New SubCategory */}
+        <FormItem>
+          <FormLabel>New SubCategory</FormLabel>
+          <FormControl>
+            <Input
+              placeholder="Enter a new subcategory"
+              value={newSubCategory}
+              onChange={(e) => setNewSubCategory(e.target.value)}
+            />
+          </FormControl>
+        </FormItem>
+
         {/* Image URL */}
         <FormField
           control={form.control}

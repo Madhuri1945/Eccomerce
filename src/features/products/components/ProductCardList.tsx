@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import { Product } from "@prisma/client";
 import ProductCard from "@/features/products/components/ProductCard";
@@ -18,8 +19,13 @@ export default function ProductCardList({ products }: { products: Product[] }) {
 
   // Function to handle delete action
   const handleDelete = async (id: number) => {
-    await deleteProduct(id);
-    toast.success("product deleted successfully");
+    try {
+      await deleteProduct(id);
+      toast.success("Product deleted successfully");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete product");
+    }
   };
 
   // Function to reset the editing state (close modal)
@@ -55,16 +61,19 @@ export default function ProductCardList({ products }: { products: Product[] }) {
                 <ProductForm
                   product={{
                     ...editingProduct,
-                    categoryId: editingProduct?.categoryId ?? 0, // Default to 0 if null
-                    subCategory: editingProduct?.subCategory || "",
-                    description: editingProduct.description ?? undefined,
+                    categoryId: editingProduct.categoryId || 0,
+                    subCategoryId: editingProduct.subCategoryId ?? undefined, // Ensure optional field alignment
+                    description: editingProduct.description || undefined,
                   }}
                   categoryId={editingProduct.categoryId || 0}
                   onSave={handleClose}
                 />
               )}
               <Dialog.Close asChild>
-                <Button className="mt-4 w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600">
+                <Button
+                  className="mt-4 w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600"
+                  onClick={handleClose}
+                >
                   Close
                 </Button>
               </Dialog.Close>

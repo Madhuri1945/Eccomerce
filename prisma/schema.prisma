@@ -13,85 +13,105 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User{
-  id Int @id @default(autoincrement())
-  clerkUserId String @unique
-  name String
-  email String @unique
-  imageUrl String?  
-  role Role @default(CUSTOMER)
-  orders Order[]
-  cart Cart?
+model User {
+  id          Int     @id @default(autoincrement())
+  clerkUserId String  @unique
+  name        String
+  email       String  @unique
+  imageUrl    String?
+  role        Role    @default(CUSTOMER)
+  orders      Order[]
+  cart        Cart?
 
   deletedAt DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
-enum Role{
+
+enum Role {
   CUSTOMER
   ADMIN
 }
-model Product{
-  id Int @id @default(autoincrement())
-  name String
+
+model Product {
+  id          Int           @id @default(autoincrement())
+  name        String
   description String?
   price       Float
   stock       Int
-  categoryId  Int?
-  image String
-  subCategory String?
-  category    Category?  @relation(fields: [categoryId], references: [id])
+  categoryId  Int           // Make categoryId required (adjust based on requirements)
+  image       String
+  subCategory SubCategory?  @relation(fields: [subCategoryId], references: [id])
+  subCategoryId Int?        // This should be an optional relation to SubCategory
+  category    Category      @relation(fields: [categoryId], references: [id])
   orderItems  OrderItem[]
   cartItems   CartItem[]
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
-model Category {
-  id          Int        @id @default(autoincrement())
 
-  name        String @unique
-  image String
-  products    Product[]
+model SubCategory {
+  id         Int       @id @default(autoincrement())
+  name       String
+  categoryId Int
+  category   Category  @relation(fields: [categoryId], references: [id])
+  products   Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
+
+model Category {
+  id Int @id @default(autoincrement())
+
+  name          String        @unique
+  image         String
+  products      Product[]
+  subCategories SubCategory[]
+}
+
 model Order {
-  id          Int          @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
   userId      Int
-  user        User         @relation(fields: [userId], references: [id])
-  status      OrderStatus  @default(PENDING)
+  user        User        @relation(fields: [userId], references: [id])
+  status      OrderStatus @default(PENDING)
   items       OrderItem[]
   totalAmount Float
 
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
+
 enum OrderStatus {
   PENDING
   PROCESSING
   COMPLETED
   CANCELLED
 }
+
 model OrderItem {
-  id          Int       @id @default(autoincrement())
-  orderId     Int
-  order       Order     @relation(fields: [orderId], references: [id])
-  productId   Int
-  product     Product   @relation(fields: [productId], references: [id])
-  quantity    Int
-  totalPrice  Float
+  id         Int     @id @default(autoincrement())
+  orderId    Int
+  order      Order   @relation(fields: [orderId], references: [id])
+  productId  Int
+  product    Product @relation(fields: [productId], references: [id])
+  quantity   Int
+  totalPrice Float
 }
+
 model Cart {
-  id          Int       @id @default(autoincrement())
-  userId      Int       @unique
-  user        User      @relation(fields: [userId], references: [id])
-  items       CartItem[]
+  id     Int        @id @default(autoincrement())
+  userId Int        @unique
+  user   User       @relation(fields: [userId], references: [id])
+  items  CartItem[]
 }
 
 model CartItem {
-  id          Int       @id @default(autoincrement())
-  cartId      Int
-  cart        Cart      @relation(fields: [cartId], references: [id])
-  productId   Int
-  product     Product   @relation(fields: [productId], references: [id])
-  quantity    Int
+  id        Int     @id @default(autoincrement())
+  cartId    Int
+  cart      Cart    @relation(fields: [cartId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
 }
